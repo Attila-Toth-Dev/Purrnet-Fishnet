@@ -1,12 +1,18 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(CharacterController))]
 public class PlayerMovement : MonoBehaviour
 {
+    [Header("Properties")]
     [SerializeField] private float moveSpeed = 4f;
     [SerializeField] private float acceleration = 4f;
     [SerializeField] private float jumpForce = 1.5f;
     [SerializeField] private float gravity = 9.81f;
+
+    [Header("References")]
+    [SerializeField] private InputActionReference moveActionRef;
+    [SerializeField] private InputActionReference jumpActionRef;
 
     private CharacterController _controller;
     private float rotationSpeed;
@@ -24,7 +30,7 @@ public class PlayerMovement : MonoBehaviour
         if (!_controller)
             return;
 
-        Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+        Vector2 input = moveActionRef.action.ReadValue<Vector2>();
         Vector3 targetMove = new Vector3(input.x, 0, input.y).normalized;
 
         currentMove = Vector3.Lerp(currentMove, targetMove, acceleration * Time.deltaTime);
@@ -34,7 +40,7 @@ public class PlayerMovement : MonoBehaviour
         else
             _verticalVelocity -= gravity * Time.deltaTime;
 
-        if (Input.GetKeyDown(KeyCode.Space) && _controller.isGrounded)
+        if (jumpActionRef.action.triggered && _controller.isGrounded)
             _verticalVelocity = jumpForce;
 
         currentMove.y = _verticalVelocity;
